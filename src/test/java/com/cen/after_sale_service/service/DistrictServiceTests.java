@@ -1,0 +1,32 @@
+package com.cen.after_sale_service.service;
+
+import com.cen.after_sale_service.entity.Address;
+import com.cen.after_sale_service.entity.District;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.List;
+//标注当前类是测试类，不会随项目一块打包
+
+//@RunWith表示启动这个单元测试类(单元测试类不能运行)，需要传递一个参数，必须是SpringRunner的实例类型
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class DistrictServiceTests {
+    //依赖接口的语法,userMapper的报错问题。原因:接口是不能直接创建
+    @Autowired(required = false)
+    private IDistrictService iDistrictService;
+        @Test
+    public void getByParent(){
+//            86表示中国，所有省的父代号都是86
+         List<District> districtList=  iDistrictService.getByParent("86");
+            for (District district:districtList){
+                System.out.println(district);
+            }
+            }
+
+}
+
+

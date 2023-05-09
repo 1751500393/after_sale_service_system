@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace属性:用于指定当前映射文件哪个接口进行映射
+ 语法：1、需要指定接口文件路径2、需要标注包的完整路径接口-->
+<mapper namespace="com.cen.after_sale_service.mapper.UserMapper">
+    <!--这标签仅用于调用.自定义映射规则：resultMap编写映射规定  -->
+    <!--  resultMap属性
+    id属性:表示给映射规则分配一个唯一的id地址 作用:方便编写标签select时候，resultMap的调用
+    type属性：取值是一个类，表示数据库中的查询结果于java中哪个实体类进行结果集的映射-->
+    <resultMap id="UserEntityMap" type="com.cen.after_sale_service.entity.User">
+        <!--   定义映射规则时根据某一条记录去映射的，所以一定要加上主键uid     -->
+        <id column="uid" property="uid"></id>
+        <!--      将表的字段和类的属性,不一致的字段进行匹配指令，名称一致的字段省略不写
+            column=数据库表中的资源名称
+            property=类中的变量名称-->
+        <result column="is_delete" property="isDelete"></result>
+        <result column="created_user" property="createdUser"></result>
+        <result column="created_time" property="createdTime"></result>
+        <result column="modified_user" property="modifiedUser"></result>
+        <result column="modified_time" property="modifiedTime"></result>
+    </resultMap>
+    <!--id属性:表示映射的接口方法的名称，直接在标签内部来编写SQL语句,缺少uid(表内的主键)mybatis并不会自动初始化
+    useGeneratedKeys="true"启动递增(一般是主键设置为递增，但并没有指定具体属性的地址)
+    keyProperty="uid"指定数据库的表中哪个字段作为主键进行递增-->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="uid">
+        <!--    于数据库元素对应,这个是个动态数值   -->
+        INSERT INTO t_user(
+        username,password,salt,phone,email,gender,avatar,is_delete,created_user,created_time,modified_user,modified_time
+        )VALUES(
+        <!--   因为上述是动态值，在MyBatis中需要占位符,来个取个变量的名字,用于接收前端传递过来的值(传入对象内)，
+        所以要驼峰命名-->
+        #{username},#{password},#{salt},#{phone},#{email},#{gender},#{avatar},#{isDelete},#{createdUser},#{createdTime},#{modifiedUser},#{modifiedTime}
+        )
+    </insert>
+    <!--情况一:select语句在执行的时候,查询的结果是 一个对象(所以需要结果集：即是实体类的映射))
+        ResultType:表示查询的结果集类型，只需要指定对应映射的类的类型，并且包含完整的包结果
+        举例：resultType="com.cen.store_after_sale_service.entity.User"
+        要求,表字段名字要和类属性一模一样，但在此xml中,user中还有isDelete等字段,但t_user中的写法是is_delete,且user的父类还存在4个属性和表中不一致的，所以表字段和类属性并不一样，所以行不通。
+        resultMap:标签当表的资源和类对象属性的字段名称不一致时，来自定义查询结果集的映射规则。
+        举例：resultMap=""
+        需要定义映射规则：映射规则定义在<mapper>后
+Radios        情况二：查询多个对象 -->
+    <select id="findByUsername" resultMap="UserEntityMap">
+        SELECT*FROM t_user WHERE username=#{username}
+    </select>
+    <!--  根据uid来查询 用户的密码,修改人,修改时间  -->
+    <update id="updatePasswordByUid">
+        UPDATE t_user SET
+        password=#{password},
+        modified_user=#{modifiedUser},
+        modified_time=#{modifiedTime}
+        where uid=#{uid}
+    </update>
+    <!-- 根据id查找用户名  -->
+    <select id="findByUid" resultMap="UserEntityMap">
+            SELECT * FROM t_user WHERE uid=#{uid}
+    </select>
+    <!-- 根据id更新用户信息-->
+    <update id="updateInfoByUid">
+        UPDATE t_user
+        SET
+        <!-- if表示条件判断标签，test是接收一个返回值为boolean,若为true则执行if标签内部-->
+        <if test="phone!=null">phone = #{phone},</if>
+        <if test="email!=null">email = #{email},</if>
+        <if test="gender!=null">gender = #{gender},</if>
+        modified_user=#{modifiedUser},
+        modified_time=#{modifiedTime}
+        where uid=#{uid}
+
+    </update>
+    <!-- 根据id更新用户头像-->
+    <update id="updateAvatarByUid">
+        UPDATE t_user
+        SET
+        avatar=#{avatar},
+        modified_user=#{modifiedUser},
+        modified_time=#{modifiedTime}
+        where uid=#{uid}
+
+    </update>
+</mapper>

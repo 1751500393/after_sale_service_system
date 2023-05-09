@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace属性:用于指定当前映射文件哪个接口进行映射
+ 语法：1、需要指定接口文件路径2、需要标注包的完整路径接口-->
+<mapper namespace="com.cen.after_sale_service.mapper.CartMapper">
+    <resultMap id="CartMapperMap" type="com.cen.after_sale_service.entity.Cart">
+        <!--   定义映射规则时根据某一条记录去映射的，所以一定要加上主键uid     -->
+        <id column="cid" property="cid"></id>
+        <!--      将表的字段和类的属性,不一致的字段进行匹配指令，名称一致的字段省略不写
+            column=数据库表中的资源名称
+            property=类中的变量名称-->
+
+        <result column="created_user" property="createdUser"></result>
+        <result column="created_time" property="createdTime"></result>
+        <result column="modified_user" property="modifiedUser"></result>
+        <result column="modified_time" property="modifiedTime"></result>
+    </resultMap>
+
+
+    <insert id="insert">
+         INSERT INTO t_cart (
+            uid,pid,price,num, created_user, created_time, modified_user, modified_time
+        ) VALUES (
+            #{uid},#{pid},#{price},#{num},#{createdUser},#{createdTime}, #{modifiedUser}, #{modifiedTime}
+        )
+    </insert>
+    <update id="updateNumByCid">
+        UPDATE t_cart set num=#{num},modified_user=#{modifiedUser},modified_time=#{modifiedTime} where cid=#{cid}
+    </update>
+    <select id="findByUidAndPid" resultMap="CartMapperMap">
+        select *from t_cart where uid=#{uid} and pid=#{pid}
+    </select>
+    <select id="findVOByUid" resultType="com.cen.after_sale_service.vo.CartVO">
+      SELECT cid,uid,pid,t_cart.price,t_cart.num,t_product.title,t_product.image,t_product.price AS realPrice
+        FROM t_cart LEFT JOIN t_product ON t_cart.pid=t_product.id
+        WHERE uid=#{uid}
+        ORDER BY t_cart.created_time DESC
+    </select>
+    <select id="findByCid" resultMap="CartMapperMap">
+        select*from t_cart where cid=#{cid}
+    </select>
+    <select id="findVOByCid" resultType="com.cen.after_sale_service.vo.CartVO">
+        SELECT cid,uid,pid,t_cart.price,t_cart.num,t_product.title,t_product.image,t_product.price AS realPrice
+        FROM t_cart LEFT JOIN t_product ON t_cart.pid=t_product.id
+        WHERE cid in(
+        <foreach collection="array" item="cid" separator=",">
+            #{cid}
+        </foreach>
+        )
+        ORDER BY t_cart.created_time DESC
+    </select>
+
+</mapper>
